@@ -647,11 +647,15 @@
 </div>
 <!--------------END MD SCREEN SIZES -------------->
 
-<!-- Shout out friend :) -->
+
+
+<!-- Shout out friend :) and me. -->
 <p class="lg:text-xl text-sm absolute bottom-4 lg:mx-12 mx-4 hidden lg:block">
-	Remake of Swellgarfo's <span class="underline underline-offset-2 hover:underline-offset-4 transition-all"
+	Swellgarfo's <span class="underline underline-offset-2 hover:underline-offset-4 transition-all"
 		><a href="https://swellgarfo.com/scattergories/">Scattergories List Generator</a></span
-	>
+	> Remade by <span class="underline underline-offset-2 hover:underline-offset-4 transition-all"
+	><a href="https://joemmalatesta.com/">Joe Malatesta</a></span
+>
 </p>
 
 <!-- Some shit I snatched from the internet :demon: -->
