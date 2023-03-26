@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { each, onMount, space, onDestroy } from "svelte/internal";
 	import { fly, slide, fade, blur, crossfade } from "svelte/transition";
+	const sleep = (milliseconds: number) => {
+		return new Promise((resolve) => setTimeout(resolve, milliseconds));
+	};
 	let allCategories: string[] = [
 		"A Boy's Name",
 		"U.S. Cities",
@@ -208,12 +211,21 @@
 		"Things That Can Get You Fired",
 	];
 	let pauseHovered = false;
-    let refreshHovered = false;
+	let refreshHovered = false;
+    let refreshRequired: boolean = false;
+
+	// CHOSE OR REFRESH LETTER
+	let letter: string = randomLetter();
+	function randomLetter() {
+		const characters = "abcdefghijklmnopqrstuvwxyz";
+		return characters.charAt(Math.floor(Math.random() * characters.length)).toUpperCase();
+	}
 
 	//   CHOOSE CATEGORIES
 	let possibleCategories: string[] = allCategories;
 	let categories: string[] = refreshCategories();
 	function refreshCategories() {
+		letter = randomLetter();
 		let selectedCategories = [];
 		for (let i = 0; i < 12; i++) {
 			const randomIndex = Math.floor(Math.random() * possibleCategories.length);
@@ -224,59 +236,82 @@
 		return selectedCategories;
 	}
 
-
-
-
-	// CHOSE OR REFRESH LETTER
-	let letter: string = randomLetter();
-	function randomLetter() {
-		const characters = "abcdefghijklmnopqrstuvwxyz";
-		return characters.charAt(Math.floor(Math.random() * characters.length)).toUpperCase();
-	}
-
-
-
-
-    //SET AND COUNT DOWN TIMER... MAKE IT STOP ON DESTROY BUT IDK HOW.
+	//SET AND COUNT DOWN TIMER... MAKE IT STOP ON DESTROY BUT IDK HOW.
 	let resetTo: number = 120;
 	let time = resetTo;
-	let countDown: number;
-	countDown = setInterval(() => {
-		if (!paused) {
-			time--;
-		}
-		if (time === -1) {
-			alert("Time's Up");
-			time = 0;
-			paused = true;
-			clearInterval(countDown);
-		}
-	}, 1000);
+    let interval: any
+    let alertTime = false
+    function startTimer() {
+  paused = false;
+  interval = setInterval(function() {
+    if (time === 0) {
+      clearInterval(interval);
+      alertTime = true
+      animateRefresh(true)
+    } else {
+      time--;
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(interval);
+  paused = true;
+}
+    
 
 
+	let changeTime = false;
+	function confirmTimeClicked() {
+		time = resetTo;
+		changeTime = false;
+	}
 
 
 	// Set paused text and Icon
 	let playPause: string, pausedIcon: string;
 	let paused = true;
 	$: if (!paused) {
+        startTimer();
 		playPause = "Pause";
 		pausedIcon = "/pause.webp";
-	} else {
+	} 
+    else {
+        stopTimer();
 		playPause = "Play";
 		pausedIcon = "/play.png";
 	}
+
+
+	// Animate Refresh
+	let showReset = false;
+	let spinRefresh = false;
+	async function animateRefresh(timesUp: boolean = false) {
+        if (timesUp) {
+            showReset = true;
+		    await sleep(2000);
+		    showReset = false;
+            alertTime = false
+            return
+        }
+		spinRefresh = true;
+		await sleep(200);
+		showReset = true;
+		await sleep(1000);
+		showReset = false;
+		spinRefresh = false;
+	}
 </script>
 
-<div class="flex h-screen scale-95 font-serif text-[#222222]">
+<div class="flex h-[97vh] scale-95 font-serif text-[#222222]">
 	<!-- FIRST COLUMN -->
 	<div class="flex flex-col h-full w-[30%]">
 		<!-- Top Half -->
 		<div class="relative h-1/2 border-4 border-neutral-900 border-b-0 stripes flex justify-center items-center">
 			<div class="top-0 absolute flex justify-between w-full">
-				<p class="text-3xl left-0 mx-3 my-1">Letter</p>
+				<p class="text-2xl left-0 mx-3 my-1">Letter</p>
 				<button
-					class="text-3xl text-neutral-900/70 hover:text-neutral-900/90 transition-all right-0 mx-3 my-1"
+					class="text-2xl text-neutral-900/70 hover:text-neutral-900/90 {!paused ? 'opacity-0' : 'opacity-100'} transition-all right-0 mx-3 my-1"
 					on:click={() => {
 						letter = randomLetter();
 					}}>Refresh</button
@@ -290,10 +325,26 @@
 			<div class="w-1/2 border-4 border-neutral-900 border-r-0 relative flex justify-center items-center">
 				<div class="top-0 absolute flex justify-between w-full">
 					<p class="text-2xl left-0 mx-3 my-1">Time</p>
-					<button class="text-2xl left-0 mx-3 my-1 text-neutral-900/70 hover:text-neutral-900/90 transition-all">Change</button>
+					<button
+						class="text-2xl left-0 mx-3 my-1 text-neutral-900/70 hover:text-neutral-900/90 transition-all"
+						on:click={() => {
+                            paused = true
+							if (changeTime) {
+                                confirmTimeClicked()
+                            }
+                            else{ changeTime = true};
+						}}>Change</button
+					>
 				</div>
 
-				<h1 class="text-8xl">{time}</h1>
+				{#if changeTime}
+					<form class="flex flex-col items-center justify-center">
+						<input class="border-2 border-neutral-800 border-b-0 text-3xl w-44 h-10" type="number" placeholder={`${time - 1}`} bind:value={resetTo} />
+						<button class="w-full bg-neutral-800 text-white hover:bg-neutral-900 h-8" on:click={confirmTimeClicked}>Confirm</button>
+                    </form>
+				{:else}
+					<h1 class="text-8xl">{time}</h1>
+				{/if}
 			</div>
 			<!-- PLAY / PAUSE -->
 			<div
@@ -313,8 +364,8 @@
 						src={pausedIcon}
 						alt="{playPause} Game"
 						class="{paused ? 'w-56' : 'w-40'} cursor-pointer absolute"
-						in:fly={{ delay: 100, x:-20 }}
-						out:fly={{ duration: 100, x:20 }}
+						in:fly={{ delay: 100, x: -20 }}
+						out:fly={{ duration: 100, x: 20 }}
 						on:click={() => {
 							paused = !paused;
 						}}
@@ -337,8 +388,8 @@
 		<!-- List of Categories -->
 		<ol class="w-full flex flex-col p-2 border-4 border-neutral-900 border-t-0 h-full border-l-0 " transition:slide>
 			{#each categories as category, index}
-				<li class="text-3xl py-[6px] border-b font-semibold relative w-fit" out:fade>
-					{++index} <span class="text-5xl mx-4">{category ? category : "Ran of Categories"}</span>
+				<li class="text-3xl py-2 border-b font-semibold relative w-fit" out:fade>
+					{++index} <span class="text-5xl mx-4">{category ? category : "Out of Categories"}</span>
 					{#if paused}
 						<div class="absolute inset-0 bg-[#222222]" in:slide={{ delay: index * 40 }} out:slide />
 					{/if}
@@ -357,25 +408,46 @@
 			refreshHovered = false;
 		}}
 		on:click={() => {
-			categories = refreshCategories();
-			time = resetTo;
+			animateRefresh();
+			setTimeout(() => {
+				categories = refreshCategories();
+				time = resetTo;
+				paused = true;
+			}, 600);
 		}}
 		on:keypress={() => {
-			categories = refreshCategories();
-			time = resetTo;
+			animateRefresh();
+			setTimeout(() => {
+				categories = refreshCategories();
+				time = resetTo;
+				paused = true;
+			}, 600);
 		}}
 	>
 		<div class="flex flex-col justify-center items-center">
-			<img src="refresh.png" alt="Refresh List" class="w-20" />
-			<h4 class="text-3xl my-5">New List</h4>
+			<img
+				src="refresh.png"
+				alt="Refresh List"
+				class="w-20 transition-all duration-300 {time === 0 ? "animate-bounce":""} {spinRefresh ? 'rotate-180 opacity-0' : 'rotate-0 opacity-100'}"
+			/>
+			<h4 class="text-3xl my-5 {spinRefresh ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'} transition-all duration-300">New List</h4>
 		</div>
 	</div>
+	{#if showReset}
+		<div class="absolute inset-0 bg-[#222222] w-full opactiy-100 flex items-center justify-center" transition:slide={{ duration: 400, axis: "x" }} >
+        <h1 class="text-9xl text-white font-bold">{alertTime ? "Time's Up": "Restarting..."}</h1>
+    </div>
+	{/if}
 </div>
-<p class="text-xl absolute bottom-0 mx-12">Remake of Swellgarfo's <span class="underline"><a href="https://swellgarfo.com/scattergories/">Scattergories List Generator</a></span></p>
+<p class="text-xl absolute bottom-4 mx-12">
+	Remake of Swellgarfo's <span class="underline hover:underline-offset-4 "
+		><a href="https://swellgarfo.com/scattergories/">Scattergories List Generator</a></span
+	>
+</p>
 
 <style>
 	.stripes {
-		background-image: repeating-linear-gradient(45deg, transparent, #2b2b2b33 15px, transparent 0px, transparent 0px);
+		background-image: repeating-linear-gradient(45deg, transparent, #2b2b2b33 12px, transparent 0px, transparent 0px);
 	}
 
 	.dots {
