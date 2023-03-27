@@ -289,7 +289,7 @@
 	$: if (!paused) {
 		startTimer();
 		playPause = "Pause";
-		pausedIcon = "/pause.webp";
+		pausedIcon = "/pause.png";
 	} else {
 		stopTimer();
 		playPause = "Play";
