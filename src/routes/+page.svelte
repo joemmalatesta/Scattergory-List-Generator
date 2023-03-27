@@ -3,6 +3,39 @@
 	import { each, onMount, space, onDestroy } from "svelte/internal";
 	import { fly, slide, fade, blur, crossfade } from "svelte/transition";
 
+	let screenWidth: number;
+	let categoryTextSize: string;
+	let categoryTextSizeIndicator: number
+	let categorySizeKey: { [key: number]: string } = {
+		1: ".875rem",
+		2: "1rem",
+		3: "1.125rem",
+		4: "1.25rem",
+		5: "1.5rem",
+		6: "1.875rem",
+		7: "2.25rem",
+	};
+
+	$: setSize(screenWidth)
+
+	function setSize(screenWidth: number){
+	if (screenWidth > 1535) {
+		categoryTextSizeIndicator = 6;
+	} else if (1535 >= screenWidth && screenWidth > 1280) {
+		categoryTextSizeIndicator = 5;
+	} else if (1280 >= screenWidth && screenWidth > 1024) {
+		categoryTextSizeIndicator = 4;
+	} else if (1024 >= screenWidth && screenWidth > 768) {
+		categoryTextSizeIndicator = 3;
+	} else if (768 >= screenWidth && screenWidth > 640) {
+		categoryTextSizeIndicator = 2;
+	} else {
+		categoryTextSizeIndicator = 1;
+	}
+}
+
+	$: categoryTextSize = categorySizeKey[categoryTextSizeIndicator];
+
 	//Make python sleep because idk how setTimeout works
 	const sleep = (milliseconds: number) => {
 		return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -321,7 +354,6 @@
 <!-- Really shouldn't be in one file, but really why not? -->
 <!-- TODO: Make this responsive. -->
 
-
 <!-- Whole thing is just a big ole grid. LARGE SCREEN SIZE-->
 <div class="h-[97vh] scale-95 font-serif text-[#222222] lg:flex hidden">
 	<!-- FIRST COLUMN -->
@@ -411,19 +443,39 @@
 	<!-------------------------------------------------- End first column -->
 
 	<!-- SECOND COLUMN -->
-	<div class="flex flex-col h-full w-[45%] xl:w-[55%] font-sans">
+	<div class="flex flex-col h-full w-[45%] xl:w-[55%] font-sans overflow-auto border-b-4 border-t-4 border-r-4 border-neutral-900">
 		<!-- Categories Heading -->
 		<!-- At some point, if it makes sense, have option to add category or increase number of categories -->
-		<div class="w-full border-4 border-l-0 border-neutral-900 h-[6%] flex items-center py-5 justify-between">
+		<div class="w-full border-b-4  border-neutral-900 h-[6%] flex items-center py-5 justify-between">
 			<h1 class="text-2xl m-2 font-semibold">Categories</h1>
+			<div class="font-semibold">
+				<button
+					class="text-4xl"
+					on:click={() => {
+							if (categoryTextSizeIndicator == 1) {
+							return
+						}
+						else{categoryTextSizeIndicator--;}
+						
+					}}>-</button
+				><span style="font-size: {categoryTextSize};" class="w-10">{letter}</span><button
+					class="text-4xl"
+					on:click={() => {
+								if (categoryTextSizeIndicator == 7) {
+							return
+						}
+						else{categoryTextSizeIndicator++;}
+					}}>+</button
+				>
+			</div>
 		</div>
 
 		<!-- List of Categories -->
 		<!-- Categories can run and will be replaced with "Out of categories" -->
-		<ol class="w-full flex flex-col p-2 border-4 border-neutral-900 border-t-0 h-full border-l-0 " transition:slide>
+		<ol class="w-full flex flex-col p-2 h-full" transition:slide>
 			{#each categories as category, index}
-				<li class="text-2xl py-2 border-b font-semibold relative w-fit" out:fade>
-					{++index} <span class="2xl:text-4xl text-3xl  mx-4">{category ? category : "Out of categories"}</span>
+				<li class="py-2 border-b lg:font-semibold relative w-fit" style="font-size: {categoryTextSize};">
+					{++index} <span class="mx-4">{category ? category : "Out of categories"}</span>
 					{#if paused}
 						<div class="absolute inset-0 bg-[#222222]" in:slide={{ delay: index * 40 }} out:slide />
 					{/if}
@@ -473,8 +525,6 @@
 	</div>
 	<!-------- End Third Column ------------->
 
-
-
 	<!-- TIMES UP and RESETTING overlay. Swipe in and out! -->
 	{#if showReset}
 		<div class="absolute inset-0 bg-[#222222] w-full opactiy-100 flex items-center justify-center" transition:slide={{ duration: 400, axis: "x" }}>
@@ -484,18 +534,10 @@
 	<!----------End Swipe Overlay----------->
 </div>
 
-
-
-
-
-
-
-
 <!-- MD SCREEN SIZES -->
 <div class="flex h-screen text-[#222222] lg:hidden font-sans">
 	<!-- FIRST COLUMN : Letter, time, and play/pause -->
 	<div class="flex flex-col w-1/3 h-full border-l-4 border-r-4 border-neutral-800 font-serif">
-
 		<!-- LETTER -->
 		<div class="h-1/3 w-full border-b-4 border-neutral-800 relative flex items-center justify-center stripes">
 			<div class="top-0 absolute flex justify-between w-full">
@@ -573,23 +615,39 @@
 		</div>
 	</div>
 
-
 	<!-- SECOND COLUMN : categories and refresh -->
-	<div class="flex flex-col w-2/3 h-full">
-
-			<!-- Categories Heading -->
-			<div class=" h-4/5 w-full  flex items-center justify-between flex-col">
-				<div class="w-full border-b-4 border-r-4 border-neutral-900">
+	<div class="flex flex-col w-2/3 h-full border-neutral-900 border-r-4">
+		<!-- Categories Heading -->
+		<div class=" h-4/5 w-full  flex items-center justify-between flex-col ">
+			<div class="border-b-4 border-neutral-900 w-full flex items-center justify-between">
 				<h1 class="text-xl m-2 font-semibold">Categories</h1>
+				<div class="font-semibold">
+					<button
+						class="text-4xl"
+						on:click={() => {
+							if (categoryTextSizeIndicator == 1) {
+							return
+						}
+						else{categoryTextSizeIndicator--;}
+						}}>-</button
+					><span style="font-size: {categoryTextSize};">{letter}</span><button
+						class="text-4xl"
+						on:click={() => {
+								if (categoryTextSizeIndicator == 7) {
+							return
+						}
+						else{categoryTextSizeIndicator++;}
+						}}>+</button
+					>
+				</div>
 			</div>
-			
 
 			<!-- List of Categories -->
 			<!-- Categories can run and will be replaced with "Out of categories" -->
-			<ol class="w-full flex flex-col p-2 border-r-4 border-neutral-900 border-t-0 h-full border-l-0 " transition:slide>
+			<ol class="w-full flex flex-col p-2  h-full overflow-auto" transition:slide>
 				{#each categories as category, index}
-					<li class="text-sm sm:text-md md:text-lg sm:py-2 py-1 border-b font-semibold relative w-fit" out:fade>
-						{++index} <span class="text-[1rem] sm:text-xl md:text-2xl mx-4">{category ? category : "Out of categories"}</span>
+					<li class="sm:py-2 py-1 font-semibold relative w-fit border-b" style="font-size: {categoryTextSize};">
+						{++index} <span class="mx-4">{category ? category : "Out of categories"}</span>
 						{#if paused}
 							<div class="absolute inset-0 bg-[#222222]" in:slide={{ delay: index * 40 }} out:slide />
 						{/if}
@@ -598,48 +656,49 @@
 			</ol>
 		</div>
 
-
 		<!-- REFRESH -->
-			<div
-				class=" h-1/5 border-4 border-neutral-900 border-l-0 border-b-0  flex justify-center items-center cursor-pointer dots"
-				on:mouseenter={() => {
-					refreshHovered = true;
-				}}
-				on:mouseleave={() => {
-					refreshHovered = false;
-				}}
-				on:click={() => {
-					animateRefresh();
-					// Break in between to allow screen to be covered before changing UI
-					setTimeout(() => {
-						categories = refreshCategories();
-						time = resetTo;
-						paused = true;
-					}, 600);
-				}}
-				on:keypress={() => {
-					animateRefresh();
-					setTimeout(() => {
-						categories = refreshCategories();
-						time = resetTo;
-						paused = true;
-					}, 600);
-				}}
-			>
-				<!-- Refresh Spins and Words Drop down. -->
-				<div class="flex flex-col justify-center items-center">
-					<img
-						src="refresh.png"
-						alt="Refresh List"
-						class="sm:w-20 w-16 transition-all duration-300 {time === 0 ? 'animate-bounce' : ''} {spinRefresh
-							? 'rotate-180 opacity-0'
-							: 'rotate-0 opacity-100'}"
-					/>
-					<h4 class="text-3xl sm:my-5 my-2 {spinRefresh ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'} transition-all duration-300">New List</h4>
-				</div>
+		<div
+			class=" h-1/5 border-t-4 border-neutral-900 flex justify-center items-center cursor-pointer dots"
+			on:mouseenter={() => {
+				refreshHovered = true;
+			}}
+			on:mouseleave={() => {
+				refreshHovered = false;
+			}}
+			on:click={() => {
+				animateRefresh();
+				// Break in between to allow screen to be covered before changing UI
+				setTimeout(() => {
+					categories = refreshCategories();
+					time = resetTo;
+					paused = true;
+				}, 600);
+			}}
+			on:keypress={() => {
+				animateRefresh();
+				setTimeout(() => {
+					categories = refreshCategories();
+					time = resetTo;
+					paused = true;
+				}, 600);
+			}}
+		>
+			<!-- Refresh Spins and Words Drop down. -->
+			<div class="flex flex-col justify-center items-center">
+				<img
+					src="refresh.png"
+					alt="Refresh List"
+					class="sm:w-20 w-16 transition-all duration-300 {time === 0 ? 'animate-bounce' : ''} {spinRefresh
+						? 'rotate-180 opacity-0'
+						: 'rotate-0 opacity-100'}"
+				/>
+				<h4 class="text-3xl sm:my-5 my-2 {spinRefresh ? 'translate-y-4 opacity-0' : 'translate-y-0 opacity-100'} transition-all duration-300">
+					New List
+				</h4>
 			</div>
 		</div>
-		{#if showReset}
+	</div>
+	{#if showReset}
 		<div class="absolute inset-0 bg-[#222222] w-full opactiy-100 flex items-center justify-center" transition:slide={{ duration: 400, axis: "x" }}>
 			<h1 class="md:text-8xl sm:text-6xl text-5xl text-white font-bold">{alertTime ? "Time's Up" : "Restarting..."}</h1>
 		</div>
@@ -647,16 +706,18 @@
 </div>
 <!--------------END MD SCREEN SIZES -------------->
 
-
-
 <!-- Shout out friend :) and me. -->
-<p class="lg:text-xl text-sm absolute bottom-4 lg:mx-12 mx-4 hidden lg:block">
+<p class="lg:text-xl text-sm absolute bottom-2 lg:mx-12 mx-4 hidden lg:block">
 	Swellgarfo's <span class="underline underline-offset-2 hover:underline-offset-4 transition-all"
 		><a href="https://swellgarfo.com/scattergories/">Scattergories List Generator</a></span
-	> Remade by <span class="underline underline-offset-2 hover:underline-offset-4 transition-all"
-	><a href="https://joemmalatesta.com/">Joe Malatesta</a></span
->
+	>
+	Remade by
+	<span class="underline underline-offset-2 hover:underline-offset-4 transition-all"><a href="https://joemmalatesta.com/">Joe Malatesta</a></span>
 </p>
+
+
+
+<svelte:window bind:innerWidth={screenWidth} />
 
 <!-- Some shit I snatched from the internet :demon: -->
 <style>
