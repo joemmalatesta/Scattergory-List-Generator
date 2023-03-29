@@ -7,7 +7,7 @@
 	let categoryTextSize: string;
 	let categoryTextSizeIndicator: number
 	let categorySizeKey: { [key: number]: string } = {
-		0: ".875rem"
+		0: ".875rem",
 		1: ".875rem",
 		2: "1rem",
 		3: "1.125rem",
@@ -475,7 +475,7 @@
 		<!-- Categories can run and will be replaced with "Out of categories" -->
 		<ol class="w-full flex flex-col p-2 h-full" transition:slide>
 			{#each categories as category, index}
-				<li class="py-2 border-b lg:font-semibold relative w-fit" style="font-size: {categoryTextSize-1};">
+				<li class="py-2 border-b lg:font-semibold relative w-fit" style="font-size: {categorySizeKey[categoryTextSizeIndicator-1]};">
 					{++index} <span class="mx-4" style="font-size: {categoryTextSize};">{category ? category : "Out of categories"}</span>
 					{#if paused}
 						<div class="absolute inset-0 bg-[#222222]" in:slide={{ delay: index * 40 }} out:slide />
@@ -647,7 +647,7 @@
 			<!-- Categories can run and will be replaced with "Out of categories" -->
 			<ol class="w-full flex flex-col p-2  h-full overflow-auto" transition:slide>
 				{#each categories as category, index}
-					<li class="sm:py-2 py-1 font-semibold relative w-fit border-b" style="font-size: {categoryTextSize-1};">
+					<li class="sm:py-2 py-1 font-semibold relative w-fit border-b" style="font-size:{categorySizeKey[categoryTextSizeIndicator-1]};">
 						{++index} <span class="mx-4" style="font-size: {categoryTextSize};">{category ? category : "Out of categories"}</span>
 						{#if paused}
 							<div class="absolute inset-0 bg-[#222222]" in:slide={{ delay: index * 40 }} out:slide />
