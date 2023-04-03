@@ -395,7 +395,7 @@
 				<!-- When change is selected, open an editor of sorts. Clicking confirm, change again, or pressing play are all valid escapes -->
 				{#if changeTimeSelected}
 					<form class="flex flex-col items-center justify-center">
-						<input class="border-2 border-neutral-800 border-b-0 text-3xl w-44 h-10" type="number" placeholder={`${time - 1}`} bind:value={resetTo} />
+						<input class="border-2 border-neutral-800 border-b-0 text-3xl w-44 h-10" type="text" pattern="[0-9]+" inputmode="numeric" placeholder={`${time - 1}`} bind:value={resetTo} />
 						<button class="w-full bg-neutral-800 text-white hover:bg-neutral-900 h-8" on:click={confirmTimeClicked}>Confirm</button>
 					</form>
 				{:else}
