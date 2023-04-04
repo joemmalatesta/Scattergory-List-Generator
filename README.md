@@ -17,6 +17,7 @@ I really liked the design of the website and it's very useful for one of my favo
 
 ### Future Changes
 - I will potentially bring back the option to add your own categories to only the current list.
+- Make this as a PWA
 - I was hoping to make a .io game mirroring Scattergories for SvelteHack but that may come in the future.
   - Perhaps making an Async version would be cool where you log on once a day and complete the puzzle or make your own lists. 
     - You join a group and keep a running total of points day over day.
