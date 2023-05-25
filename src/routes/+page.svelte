@@ -1,4 +1,8 @@
 <!-- TODO: make this a PWA as well, that would be cool -->
+<svelte:head>
+	<title>Scattergories List</title>
+</svelte:head>
+
 <script lang="ts">
 	import { each, onMount, space, onDestroy } from "svelte/internal";
 	import { fly, slide, fade, blur, crossfade } from "svelte/transition";
